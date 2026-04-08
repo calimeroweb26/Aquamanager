@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Ajouter un aquarium</h2>
+    <form method="POST">
+        <input type="text" name="name" placeholder="Nom de l'aquarium" required>
+        <input type="number" name="volume" placeholder="Volume (L)" step="0.1" required>
+        <textarea name="description" placeholder="Description"></textarea>
+        <button type="submit" class="btn">Ajouter</button>
+    </form>
+{% endblock %}

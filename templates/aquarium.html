@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>{{ aquarium['name'] }}</h2>
+    <p>Volume: {{ aquarium['volume'] }} L</p>
+    <p>{{ aquarium['description'] }}</p>
+
+    <div class="tabs">
+        <button class="tab-button active" onclick="openTab(event, 'water-changes')">Changements d'eau</button>
+        <button class="tab-button" onclick="openTab(event, 'population')">Population</button>
+        <button class="tab-button" onclick="openTab(event, 'photos')">Photos</button>
+    </div>
+
+    <!-- Onglet Changements d'eau -->
+    <div id="water-changes" class="tab-content" style="display: block;">
+        <h3>Changements d'eau</h3>
+        <a href="{{ url_for('add_water_change', aquarium_id=aquarium['id']) }}" class="btn">Ajouter un changement</a>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Volume changé (L)</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for change in water_changes %}
+                    <tr>
+                        <td>{{ change['date'] }}</td>
+                        <td>{{ change['volume_changed'] }}</td>
+                        <td>{{ change['notes'] }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Onglet Population -->
+    <div id="population" class="tab-content">
+        <h3>Population</h3>
+        <form action="{{ url_for('add_population', aquarium_id=aquarium['id']) }}" method="POST">
+            <input type="text" name="species" placeholder="Espèce" required>
+            <input type="number" name="quantity" placeholder="Quantité" required>
+            <textarea name="notes" placeholder="Notes"></textarea>
+            <button type="submit" class="btn">Ajouter</button>
+        </form>
+        <table>
+            <thead>
+                <tr>
+                    <th>Espèce</th>
+                    <th>Quantité</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for fish in population %}
+                    <tr>
+                        <td>{{ fish['species'] }}</td>
+                        <td>{{ fish['quantity'] }}</td>
+                        <td>{{ fish['notes'] }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Onglet Photos -->
+    <div id="photos" class="tab-content">
+        <h3>Photos</h3>
+        <form action="{{ url_for('upload_photo', aquarium_id=aquarium['id']) }}" method="POST" enctype="multipart/form-data">
+            <input type="file" name="photo" accept="image/*" required>
+            <button type="submit" class="btn">Télécharger</button>
+        </form>
+        <div class="photo-gallery">
+            {% for photo in photos %}
+                <div class="photo-card">
+                    <img src="{{ url_for('static', filename='../uploads/' + photo['filename']) }}" alt="Photo de l'aquarium">
+                    <p>{{ photo['upload_date'] }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tab-button");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+    </script>
+{% endblock %}
