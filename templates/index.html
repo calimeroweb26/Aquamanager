@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Mes aquariums</h1>
+            <a href="{{ url_for('add_aquarium') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Ajouter un aquarium
+            </a>
+        </div>
+
+        {% if aquariums %}
+        <div class="row">
+            {% for aquarium in aquariums %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="card-title mb-0">{{ aquarium.name }}</h5>
+                            <span class="badge bg-info">{{ aquarium.size }} L</span>
+                        </div>
+                        <p class="card-text">{{ aquarium.description or "Aucune description" }}</p>
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('aquarium_detail', id=aquarium.id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye me-1"></i>Voir
+                            </a>
+                            <a href="{{ url_for('water_change_history', id=aquarium.id) }}" class="btn btn-sm btn-outline-success">
+                                <i class="fas fa-tint me-1"></i>Changements
+                            </a>
+                            <a href="{{ url_for('delete_aquarium', id=aquarium.id) }}"
+                               class="btn btn-sm btn-outline-danger"
+                               onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet aquarium ?')">
+                                <i class="fas fa-trash me-1"></i>Supprimer
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>Aucun aquarium enregistré. Ajoutez-en un pour commencer!
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

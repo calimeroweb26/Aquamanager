@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Historique de {{ aquarium.name }}</h1>
+            <div>
+                <a href="{{ url_for('aquarium_detail', id=aquarium.id) }}" class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-arrow-left me-2"></i>Retour
+                </a>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addWaterChangeModal">
+                    <i class="fas fa-plus me-2"></i>Ajouter un changement
+                </button>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Évolution des changements</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="waterChangeChart" height="300"></canvas>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-tint me-2"></i>Historique détaillé</h5>
+            </div>
+            <div class="card-body">
+                {% if changes %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Volume (L)</th>
+                                <th>Notes</th>
+                                <th>Prochain changement</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for change in changes %}
+                            <tr>
+                                <td>{{ change.date.strftime('%d/%m/%Y') }}</td>
+                                <td>{{ change.volume }}</td>
+                                <td>{{ change.notes or "-" }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if change.next_change >= date.today() else 'danger' }}">
+                                        {{ change.next_change.strftime('%d/%m/%Y') }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('delete_water_change', id=aquarium.id, change_id=change.id) }}"
+                                       class="btn btn-outline-danger btn-sm"
+                                       onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce changement ?')">
+                                        <i class="fas fa-trash me-1"></i>Supprimer
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>Aucun changement d'eau enregistré pour cet aquarium.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour ajouter un changement d'eau -->
+<div class="modal fade" id="addWaterChangeModal" tabindex="-1" aria-labelledby="addWaterChangeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addWaterChangeModalLabel">Ajouter un changement d'eau</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('add_water_change', id=aquarium.id) }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="volume" class="form-label">Volume changé (en litres)</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" id="volume" name="volume" required>
+                            <span class="input-group-text">L</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('waterChangeChart').getContext('2d');
+        const waterChangeChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ dates|tojson|safe }},
+                datasets: [{
+                    label: 'Volume changé (L)',
+                    data: {{ volumes|tojson|safe }},
+                    borderColor: '#4e73df',
+                    backgroundColor: 'rgba(78, 115, 223, 0.05)',
+                    tension: 0.3,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.raw + ' L';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Volume (L)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

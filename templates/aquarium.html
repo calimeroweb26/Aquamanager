@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>{{ aquarium.name }}</h1>
+            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Retour
+            </a>
+        </div>
+
+        <div class="card mb-4 shadow-sm">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5 class="card-title">Informations</h5>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                <strong>Taille:</strong> {{ aquarium.size }} litres
+                            </li>
+                            <li class="list-group-item">
+                                <strong>Description:</strong>
+                                <p class="mt-2">{{ aquarium.description or "Aucune description" }}</p>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h5 class="card-title">Actions rapides</h5>
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('water_change_history', id=aquarium.id) }}"
+                               class="btn btn-outline-primary">
+                                <i class="fas fa-tint me-2"></i>Historique des changements
+                            </a>
+                            <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#addPhotoModal">
+                                <i class="fas fa-camera me-2"></i>Ajouter une photo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-images me-2"></i>Galerie de photos</h5>
+            </div>
+            <div class="card-body">
+                {% if photos %}
+                <div class="row">
+                    {% for photo in photos %}
+                    <div class="col-md-4 col-lg-3 mb-4">
+                        <div class="card h-100">
+                            <img src="{{ url_for('static', filename='uploads/' + photo.filename) }}"
+                                 class="card-img-top" alt="Photo de l'aquarium" style="height: 200px; object-fit: cover;">
+                            <div class="card-body text-center">
+                                <a href="{{ url_for('delete_photo', id=aquarium.id, photo_id=photo.id) }}"
+                                   class="btn btn-sm btn-outline-danger"
+                                   onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette photo ?')">
+                                    <i class="fas fa-trash me-1"></i>Supprimer
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>Aucune photo pour cet aquarium.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour ajouter une photo -->
+<div class="modal fade" id="addPhotoModal" tabindex="-1" aria-labelledby="addPhotoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addPhotoModalLabel">Ajouter une photo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('add_photo', id=aquarium.id) }}" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="photo" class="form-label">Sélectionnez une photo</label>
+                        <input class="form-control" type="file" id="photo" name="photo" accept="image/*" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Ajouter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour ajouter un changement d'eau -->
+<div class="modal fade" id="addWaterChangeModal" tabindex="-1" aria-labelledby="addWaterChangeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addWaterChangeModalLabel">Ajouter un changement d'eau</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('add_water_change', id=aquarium.id) }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="volume" class="form-label">Volume changé (en litres)</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" id="volume" name="volume" required>
+                            <span class="input-group-text">L</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
