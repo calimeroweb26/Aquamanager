@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AquaManager</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--p:#0077b6;--pd:#005f8e;--s:#00b4d8;--ok:#2ecc71;--warn:#f39c12;--err:#e74c3c;--bg:#16213e;--bdr:#0f3460;--txt:#e0e0e0;--muted:#a0a0b0;--inp:#0f3460}
+body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#0a0a1a,#1a1a3e,#0a1628);min-height:100vh;color:var(--txt)}
+header{background:rgba(0,119,182,.15);backdrop-filter:blur(10px);border-bottom:1px solid var(--bdr);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;position:sticky;top:0;z-index:100}
+.logo{font-size:1.5rem;font-weight:700;background:linear-gradient(135deg,var(--s),var(--p));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.dash{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;padding:20px;max-width:1400px;margin:0 auto}
+.sc{background:rgba(22,33,62,.8);border:1px solid var(--bdr);border-radius:12px;padding:16px;text-align:center}
+.sn{font-size:2rem;font-weight:700}.sl{font-size:.8rem;color:var(--muted);margin-top:4px}
+.sc.urg .sn{color:var(--err)}.sc.wrn .sn{color:var(--warn)}.sc.ok .sn{color:var(--ok)}
+.toolbar{padding:0 20px 16px;max-width:1400px;margin:0 auto;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.sb{flex:1;min-width:200px;background:var(--inp);border:1px solid var(--bdr);border-radius:8px;padding:10px 14px;color:var(--txt);font-size:.9rem;outline:none}
+.sb:focus{border-color:var(--p)}
+select{background:var(--inp);border:1px solid var(--bdr);border-radius:8px;padding:10px 14px;color:var(--txt);font-size:.9rem;outline:none;cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px;padding:0 20px 40px;max-width:1400px;margin:0 auto}
+.card{background:rgba(22,33,62,.9);border:1px solid var(--bdr);border-radius:16px;overflow:hidden;transition:transform .2s,box-shadow .2s}
+.card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,.4)}
+.csb{height:4px}.csb.urgent{background:var(--err)}.csb.warning{background:var(--warn)}.csb.ok{background:var(--ok)}
+.pz{position:relative;height:200px;background:#0a0a1a;overflow:hidden;cursor:pointer}
+.pz img{width:100%;height:100%;object-fit:cover;transition:transform .3s}.pz:hover img{transform:scale(1.05)}
+.nophoto{display:flex;align-items:center;justify-content:center;height:100%;font-size:4rem;color:var(--bdr)}
+.pnav{position:absolute;top:50%;transform:translateY(-50%);width:100%;display:flex;justify-content:space-between;padding:0 8px}
+.pnav button{background:rgba(0,0,0,.6);border:none;color:#fff;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:1rem}
+.pcnt{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.6);padding:2px 8px;border-radius:10px;font-size:.75rem}
+.cb{padding:16px}
+.ctr{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px}
+.ct{font-size:1.1rem;font-weight:700}
+.cl{background:rgba(0,180,216,.15);color:var(--s);padding:2px 10px;border-radius:20px;font-size:.8rem;white-space:nowrap}
+.cd{font-size:.85rem;color:var(--muted);margin-bottom:12px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.cdates{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.di{background:rgba(15,52,96,.4);border-radius:8px;padding:8px;text-align:center}
+.dl{font-size:.7rem;color:var(--muted);margin-bottom:2px}.dv{font-size:.85rem;font-weight:600}
+.badge{display:flex;align-items:center;justify-content:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:.85rem;font-weight:600;margin-bottom:12px}
+.badge.urgent{background:rgba(231,76,60,.2);color:#ff6b6b;border:1px solid rgba(231,76,60,.4)}
+.badge.warning{background:rgba(243,156,18,.2);color:#ffd166;border:1px solid rgba(243,156,18,.4)}
+.badge.ok{background:rgba(46,204,113,.2);color:#6bffa8;border:1px solid rgba(46,204,113,.4)}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{padding:8px 16px;border:none;border-radius:8px;cursor:pointer;font-size:.85rem;font-weight:600;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn-p{background:var(--p);color:#fff}.btn-p:hover{background:var(--pd)}
+.btn-ok{background:rgba(46,204,113,.2);color:#2ecc71;border:1px solid rgba(46,204,113,.4)}.btn-ok:hover{background:rgba(46,204,113,.3)}
+.btn-w{background:rgba(243,156,18,.2);color:#f39c12;border:1px solid rgba(243,156,18,.4)}.btn-w:hover{background:rgba(243,156,18,.3)}
+.btn-d{background:rgba(231,76,60,.2);color:#e74c3c;border:1px solid rgba(231,76,60,.4)}.btn-d:hover{background:rgba(231,76,60,.3)}
+.btn-sec{background:rgba(255,255,255,.1);color:var(--txt)}
+.btn-sm{padding:6px 12px;font-size:.8rem}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)}
+.ov.hidden{display:none}
+.modal{background:var(--bg);border:1px solid var(--bdr);border-radius:16px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto}
+.mh{padding:20px 24px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--bdr);position:sticky;top:0;background:var(--bg);z-index:1}
+.mt{font-size:1.2rem;font-weight:700}
+.mc{background:none;border:none;color:var(--muted);font-size:1.5rem;cursor:pointer;line-height:1}
+.mb{padding:24px}.mf{padding:0 24px 24px;display:flex;justify-content:flex-end;gap:10px}
+.fg{margin-bottom:18px}
+.fl{display:block;font-size:.85rem;color:var(--muted);margin-bottom:6px;font-weight:600}
+.fc{width:100%;background:var(--inp);border:1px solid var(--bdr);border-radius:8px;padding:10px 14px;color:var(--txt);font-size:.9rem;outline:none;transition:border-color .2s;font-family:inherit}
+.fc:focus{border-color:var(--p)}
+textarea.fc{resize:vertical;min-height:80px}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.fh{font-size:.75rem;color:var(--muted);margin-top:4px}
+.uz{border:2px dashed var(--bdr);border-radius:12px;padding:30px;text-align:center;cursor:pointer;transition:all .2s;position:relative}
+.uz:hover,.uz.drag-over{border-color:var(--p);background:rgba(0,119,182,.1)}
+.uz input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.ppg{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px;margin-top:12px}
+.ppi{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden}
+.ppi img{width:100%;height:100%;object-fit:cover}
+.ppr{position:absolute;top:2px;right:2px;background:rgba(231,76,60,.8);border:none;color:#fff;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:.7rem;display:flex;align-items:center;justify-content:center}
+.cdlg{background:var(--bg);border:1px solid var(--bdr);border-radius:16px;padding:30px;max-width:400px;width:100%;text-align:center}
+.cdlg h3{margin-bottom:12px}.cdlg p{color:var(--muted);margin-bottom:24px}
+.ca{display:flex;justify-content:center;gap:12px}
+.lb{position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:2000;display:flex;align-items:center;justify-content:center;flex-direction:column}
+.lb.hidden{display:none}
+.lb img{max-width:90vw;max-height:80vh;object-fit:contain;border-radius:8px}
+.lbc{position:absolute;top:20px;right:20px;background:rgba(255,255,255,.1);border:none;color:#fff;font-size:2rem;cursor:pointer;border-radius:50%;width:44px;height:44px}
+.lbn{display:flex;gap:20px;margin-top:16px}
+.lbn button{background:rgba(255,255,255,.1);border:none;color:#fff;font-size:1.5rem;cursor:pointer;border-radius:8px;padding:8px 20px}
+.lbn button:hover{background:rgba(255,255,255,.2)}
+.lbcnt{color:var(--muted);font-size:.9rem;margin-top:8px}
+.tc{position:fixed;bottom:20px;right:20px;z-index:3000;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--bg);border:1px solid var(--bdr);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:10px;font-size:.9rem;animation:si .3s ease;max-width:350px}
+.toast.success{border-color:var(--ok)}.toast.error{border-color:var(--err)}
+@keyframes si{from{transform:translateX(100%);opacity:0}to{transform:none;opacity:1}}
+.ldo{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:4000;display:flex;align-items:center;justify-content:center}
+.ldo.hidden{display:none}
+.spin{width:40px;height:40px;border:3px solid rgba(255,255,255,.1);border-top-color:var(--p);border-radius:50%;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty .ico{font-size:4rem;margin-bottom:16px}
+@media(max-width:600px){.fr{grid-template-columns:1fr}.cdates{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="ldo hidden" id="ldo"><div class="spin"></div></div>
+<header>
+  <div class="logo">&#x1F420; AquaManager</div>
+  <button class="btn btn-p" onclick="openModal()">&#x2795; Ajouter</button>
+</header>
+<div class="dash">
+  <div class="sc"><div class="sn" id="st">0</div><div class="sl">Total</div></div>
+  <div class="sc urg"><div class="sn" id="su">0</div><div class="sl">Urgents</div></div>
+  <div class="sc wrn"><div class="sn" id="sw">0</div><div class="sl">Bientot</div></div>
+  <div class="sc ok"><div class="sn" id="sok">0</div><div class="sl">OK</div></div>
+</div>
+<div class="toolbar">
+  <input type="text" class="sb" id="search" placeholder="Rechercher..." oninput="render()">
+  <select id="filter" onchange="render()">
+    <option value="all">Tous</option>
+    <option value="urgent">Urgents</option>
+    <option value="warning">Bientot</option>
+    <option value="ok">OK</option>
+  </select>
+</div>
+<div class="grid" id="grid"></div>
+<div class="ov hidden" id="form-ov">
+  <div class="modal">
+    <div class="mh">
+      <h2 class="mt" id="mtitle">Ajouter un aquarium</h2>
+      <button class="mc" onclick="closeModal()">&#x00D7;</button>
+    </div>
+    <div class="mb">
+      <input type="hidden" id="eid">
+      <div class="fg"><label class="fl">Nom *</label><input type="text" class="fc" id="fn" placeholder="Mon aquarium"></div>
+      <div class="fr">
+        <div class="fg"><label class="fl">Litrage (L)</label><input type="number" class="fc" id="flt" placeholder="100" min="1"></div>
+        <div class="fg"><label class="fl">Intervalle (jours)</label><input type="number" class="fc" id="fi" placeholder="7" min="1" oninput="calcNext()"></div>
+      </div>
+      <div class="fg"><label class="fl">Description</label><textarea class="fc" id="fd" placeholder="Poissons, plantes..."></textarea></div>
+      <div class="fr">
+        <div class="fg"><label class="fl">Dernier changement</label><input type="date" class="fc" id="flc" oninput="calcNext()"></div>
+        <div class="fg"><label class="fl">Prochain changement</label><input type="date" class="fc" id="fnext" readonly style="opacity:.7"><div class="fh">Calcule automatiquement</div></div>
+      </div>
+      <div class="fg">
+        <label class="fl">Photos</label>
+        <div class="uz" id="uz">
+          <input type="file" id="finput" accept="image/*" multiple onchange="handleFiles(this.files)">
+          <div>Cliquez ou glissez des photos ici</div>
+          <div style="font-size:.8rem;color:var(--muted);margin-top:4px">JPG, PNG, GIF, WebP - max 10 Mo</div>
+        </div>
+        <div class="ppg" id="ppg"></div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-sec" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-p" onclick="save()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+<div class="ov hidden" id="conf-ov">
+  <div class="cdlg">
+    <h3>Confirmer la suppression</h3>
+    <p id="conf-txt"></p>
+    <div class="ca">
+      <button class="btn btn-sec" onclick="closeConf()">Annuler</button>
+      <button class="btn btn-d" id="conf-ok">Supprimer</button>
+    </div>
+  </div>
+</div>
+<div class="lb hidden" id="lb">
+  <button class="lbc" onclick="closeLb()">&#x00D7;</button>
+  <img id="lbi" src="" alt="">
+  <div class="lbn">
+    <button onclick="navLb(-1)">&#x276E;</button>
+    <button onclick="navLb(1)">&#x276F;</button>
+  </div>
+  <div class="lbcnt" id="lbcnt"></div>
+</div>
+<div class="tc" id="tc"></div>
+<script>
+const API='/api';
+let data=[],editPhotos=[],newFiles=[],cardIdx={};
+let lbPhotos=[],lbIdx=0;
+
+document.addEventListener('DOMContentLoaded',function(){
+  load();
+  setInterval(load,60000);
+  var uz=document.getElementById('uz');
+  uz.addEventListener('dragover',function(e){e.preventDefault();uz.classList.add('drag-over')});
+  uz.addEventListener('dragleave',function(){uz.classList.remove('drag-over')});
+  uz.addEventListener('drop',function(e){e.preventDefault();uz.classList.remove('drag-over');handleFiles(e.dataTransfer.files)});
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'){closeLb();closeModal();}
+    if(e.key==='ArrowLeft')navLb(-1);
+    if(e.key==='ArrowRight')navLb(1);
+  });
+});
+
+function showLoad(v){document.getElementById('ldo').classList.toggle('hidden',!v);}
+
+function apiFetch(url,opts){
+  opts=opts||{};
+  return fetch(API+url,opts).then(function(r){
+    if(!r.ok)return r.json().then(function(e){throw new Error(e.error||'Erreur')});
+    return r.json();
+  });
+}
+
+function load(){
+  return apiFetch('/aquariums').then(function(d){data=d;dash();render();}).catch(function(e){toast('Erreur de connexion','error');});
+}
+
+function status(a){
+  if(!a.next_date)return 'ok';
+  var d=Math.ceil((new Date(a.next_date)-new Date())/86400000);
+  return d<0?'urgent':d<=3?'warning':'ok';
+}
+
+function daysText(a){
+  if(!a.next_date)return 'Pas de date';
+  var d=Math.ceil((new Date(a.next_date)-new Date())/86400000);
+  if(d<0)return 'En retard de '+Math.abs(d)+'j';
+  if(d===0)return "Aujourd'hui !";
+  if(d===1)return 'Demain';
+  return 'Dans '+d+' jours';
+}
+
+function dash(){
+  var s={urgent:0,warning:0,ok:0};
+  data.forEach(function(a){s[status(a)]++;});
+  document.getElementById('st').textContent=data.length;
+  document.getElementById('su').textContent=s.urgent;
+  document.getElementById('sw').textContent=s.warning;
+  document.getElementById('sok').textContent=s.ok;
+}
+
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function fmt(d){if(!d)return '-';var p=d.split('-');return p[2]+'/'+p[1]+'/'+p[0];}
+
+function render(){
+  var q=document.getElementById('search').value.toLowerCase();
+  var f=document.getElementById('filter').value;
+  var grid=document.getElementById('grid');
+  var list=data.filter(function(a){
+    return(a.name.toLowerCase().indexOf(q)>=0||(a.description||'').toLowerCase().indexOf(q)>=0)&&(f==='all'||status(a)===f);
+  });
+  if(!list.length){
+    grid.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="ico">&#x1F420;</div><h3>'+(data.length?'Aucun resultat':'Aucun aquarium')+'</h3></div>';
+    return;
+  }
+  var icons={urgent:'&#x1F6A8;',warning:'&#x26A0;&#xFE0F;',ok:'&#x2705;'};
+  grid.innerHTML=list.map(function(a){
+    var st=status(a),ph=a.photos||[],idx=cardIdx[a.id]||0;
+    var phStr=encodeURIComponent(JSON.stringify(ph));
+    return '<div class="card">'+
+      '<div class="csb '+st+'"></div>'+
+      '<div class="pz" onclick="openLbE(\''+phStr+'\','+idx+')">'+
+        (ph.length?'<img src="'+ph[idx].url+'" alt="" loading="lazy">'+
+          (ph.length>1?'<div class="pnav"><button onclick="event.stopPropagation();navCard(\''+a.id+'\',-1,'+ph.length+')">&#x276E;</button><button onclick="event.stopPropagation();navCard(\''+a.id+'\',1,'+ph.length+')">&#x276F;</button></div><div class="pcnt">'+(idx+1)+'/'+ph.length+'</div>':'')
+        :'<div class="nophoto">&#x1F420;</div>')+
+      '</div>'+
+      '<div class="cb">'+
+        '<div class="ctr"><div class="ct">'+esc(a.name)+'</div>'+(a.litrage?'<span class="cl">'+a.litrage+'L</span>':'')+' </div>'+
+        (a.description?'<div class="cd">'+esc(a.description)+'</div>':'')+
+        '<div class="cdates">'+
+          '<div class="di"><div class="dl">Dernier changement</div><div class="dv">'+fmt(a.last_change)+'</div></div>'+
+          '<div class="di"><div class="dl">Prochain changement</div><div class="dv">'+fmt(a.next_date)+'</div></div>'+
+        '</div>'+
+        '<div class="badge '+st+'">'+icons[st]+' '+daysText(a)+'</div>'+
+        '<div class="actions">'+
+          '<button class="btn btn-ok btn-sm" onclick="quickChange(\''+a.id+'\')">Change !</button>'+
+          '<button class="btn btn-w btn-sm" onclick="editAq(\''+a.id+'\')">Editer</button>'+
+          '<button class="btn btn-d btn-sm" onclick="confDel(\''+a.id+'\',\''+esc(a.name)+'\')">Suppr.</button>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function navCard(id,dir,total){cardIdx[id]=((cardIdx[id]||0)+dir+total)%total;render();}
+
+function openLbE(phEnc,idx){
+  var ph=JSON.parse(decodeURIComponent(phEnc));
+  if(!ph||!ph.length)return;
+  lbPhotos=ph;lbIdx=idx||0;
+  document.getElementById('lbi').src=lbPhotos[lbIdx].url;
+  document.getElementById('lbcnt').textContent=(lbIdx+1)+'/'+lbPhotos.length;
+  document.getElementById('lb').classList.remove('hidden');
+}
+function closeLb(){document.getElementById('lb').classList.add('hidden');}
+function navLb(d){
+  if(!lbPhotos.length)return;
+  lbIdx=(lbIdx+d+lbPhotos.length)%lbPhotos.length;
+  document.getElementById('lbi').src=lbPhotos[lbIdx].url;
+  document.getElementById('lbcnt').textContent=(lbIdx+1)+'/'+lbPhotos.length;
+}
+
+function openModal(){
+  document.getElementById('mtitle').textContent='Ajouter un aquarium';
+  document.getElementById('eid').value='';
+  document.getElementById('fn').value='';
+  document.getElementById('flt').value='';
+  document.getElementById('fi').value='';
+  document.getElementById('fd').value='';
+  document.getElementById('flc').value='';
+  document.getElementById('fnext').value='';
+  editPhotos=[];newFiles=[];
+  renderPrev();
+  document.getElementById('form-ov').classList.remove('hidden');
+}
+function closeModal(){document.getElementById('form-ov').classList.add('hidden');}
+
+function editAq(id){
+  var a=data.find(function(x){return x.id===id;});
+  if(!a)return;
+  document.getElementById('mtitle').textContent='Modifier '+a.name;
+  document.getElementById('eid').value=a.id;
+  document.getElementById('fn').value=a.name||'';
+  document.getElementById('flt').value=a.litrage||'';
+  document.getElementById('fi').value=a.interval||'';
+  document.getElementById('fd').value=a.description||'';
+  document.getElementById('flc').value=a.last_change||'';
+  document.getElementById('fnext').value=a.next_date||'';
+  editPhotos=JSON.parse(JSON.stringify(a.photos||[]));
+  newFiles=[];
+  renderPrev();
+  document.getElementById('form-ov').classList.remove('hidden');
+}
+
+function calcNext(){
+  var lc=document.getElementById('flc').value;
+  var iv=document.getElementById('fi').value;
+  if(!lc||!iv){document.getElementById('fnext').value='';return;}
+  var d=new Date(lc);
+  d.setDate(d.getDate()+parseInt(iv));
+  document.getElementById('fnext').value=d.toISOString().split('T')[0];
+}
+
+function handleFiles(files){
+  Array.from(files).forEach(function(f){
+    if(newFiles.length+editPhotos.length>=20){toast('Maximum 20 photos','error');return;}
+    newFiles.push(f);
+  });
+  renderPrev();
+}
+
+function renderPrev(){
+  var g=document.getElementById('ppg');
+  var existing=editPhotos.map(function(p,i){
+    return '<div class="ppi"><img src="'+p.url+'" alt=""><button class="ppr" onclick="delExisting('+i+')">x</button></div>';
+  }).join('');
+  var news=newFiles.map(function(f,i){
+    var url=URL.createObjectURL(f);
+    return '<div class="ppi"><img src="'+url+'" alt=""><button class="ppr" onclick="delNew('+i+')">x</button></div>';
+  }).join('');
+  g.innerHTML=existing+news;
+}
+
+function delExisting(i){editPhotos.splice(i,1);renderPrev();}
+function delNew(i){newFiles.splice(i,1);renderPrev();}
+
+function save(){
+  var name=document.getElementById('fn').value.trim();
+  if(!name){toast('Le nom est requis','error');return;}
+  var id=document.getElementById('eid').value;
+  var fd=new FormData();
+  fd.append('name',name);
+  fd.append('litrage',document.getElementById('flt').value||'');
+  fd.append('description',document.getElementById('fd').value||'');
+  fd.append('last_change',document.getElementById('flc').value||'');
+  fd.append('interval',document.getElementById('fi').value||'');
+  if(id)fd.append('existingPhotos',JSON.stringify(editPhotos.map(function(p){return p.id;})));
+  newFiles.forEach(function(f){fd.append('photos',f);});
+  showLoad(true);
+  var url=id?('/aquariums/'+id):'/aquariums';
+  var method=id?'PUT':'POST';
+  apiFetch(url,{method:method,body:fd}).then(function(){
+    toast(id?'Aquarium modifie':'Aquarium ajoute','success');
+    closeModal();return load();
+  }).catch(function(e){toast(e.message,'error');}).finally(function(){showLoad(false);});
+}
+
+function quickChange(id){
+  showLoad(true);
+  apiFetch('/aquariums/'+id+'/change',{method:'PATCH'}).then(function(){
+    toast('Changement enregistre !','success');return load();
+  }).catch(function(e){toast(e.message,'error');}).finally(function(){showLoad(false);});
+}
+
+function confDel(id,name){
+  document.getElementById('conf-txt').textContent='Supprimer "'+name+'" et toutes ses photos ?';
+  document.getElementById('conf-ok').onclick=function(){closeConf();doDelete(id);};
+  document.getElementById('conf-ov').classList.remove('hidden');
+}
+function closeConf(){document.getElementById('conf-ov').classList.add('hidden');}
+
+function doDelete(id){
+  showLoad(true);
+  apiFetch('/aquariums/'+id,{method:'DELETE'}).then(function(){
+    toast('Aquarium supprime','success');return load();
+  }).catch(function(e){toast(e.message,'error');}).finally(function(){showLoad(false);});
+}
+
+function toast(msg,type){
+  type=type||'success';
+  var t=document.createElement('div');
+  t.className='toast '+(type==='error'?'error':'success');
+  t.textContent=(type==='error'?'Erreur: ':'')+msg;
+  document.getElementById('tc').appendChild(t);
+  setTimeout(function(){t.remove();},4000);
+}
+</script>
+</body>
+</html>
